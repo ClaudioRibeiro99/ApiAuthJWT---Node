@@ -138,6 +138,29 @@ app.post("/auth/login", async (req, res) => {
         res.status(500).json({message: "Aconteceu um erro no servidor, tente em alguns minutos!"})
     }
 })
+
+app.delete("/user/:id", async (req, res) => {
+
+    const id = req.params.id
+    console.log(id)
+
+    const user = await User.findById(id, '-password')
+    if(!user) {
+        return res.status(404).json({message: 'Usuario não encontrado!'})
+    }
+    try {
+        await user.delete()
+        
+        res.status(201).json({message: `Usuário ${id} deletado com sucesso!`})        
+     } catch (error) {
+
+         console.log(error)
+         res.status(500).json({message: "Aconteceu um erro no servidor, tente em alguns minutos!"})
+     }
+    
+})
+
+
 //Credencials
 const dbUser = process.env.DB_USER
 const dbPassword = process.env.DB_PASSWORD
