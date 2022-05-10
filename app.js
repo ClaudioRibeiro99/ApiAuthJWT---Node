@@ -1,17 +1,33 @@
+
 require('dotenv').config()
+const cors = require('cors')
+const axios = require('axios')
 const express = require('express')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 // Models
 const User = require('./models/User')
 // Public Route
-app.get('/', (req, res) => {
-    res.status(200).json({message: 'Bem vindo a nossa API'})
+app.get("/", async (req, res) => {
+    
+    const id = req.params.id
+    const userAll = await User.find(id)
+    
+    if(!userAll){
+        return res.status(404).json({message: 'Nenhum usuario foi encontrado!'})  
+    }
+    try {
+        res.status(200).json(userAll)
+    } catch (error) {
+        res.status(500).json({message: "Aconteceu um erro no servidor, tente em alguns minutos!"})
+    }
 })
+
 // Private Route
 app.get("/user/:id", checkToken, async (req, res) => {
 
@@ -130,7 +146,7 @@ app.post("/auth/login", async (req, res) => {
         
         )
 
-        res.status(200).json({message: "Autenticação realizada com sucesso", token})
+        res.status(200).json({message: "Autenticação realizada com sucesso"})
 
     } catch (error) {
         console.log(error)
@@ -160,7 +176,6 @@ app.delete("/user/:id", async (req, res) => {
     
 })
 
-
 //Credencials
 const dbUser = process.env.DB_USER
 const dbPassword = process.env.DB_PASSWORD
@@ -169,7 +184,6 @@ mongoose
 .connect(`mongodb+srv://${dbUser}:${dbPassword}@apiauthcluster.lrkqi.mongodb.net/api2AuthJWT?retryWrites=true&w=majority`)
 .then(() => {
     app.listen(3000)
-    console.log('Conectou ao banco!')
 })
 .catch((err) => console.log(err))
 
